@@ -1,16 +1,16 @@
-import 'dotenv/config';
 import { Injectable } from '@nestjs/common';
-import { PrismaClient } from '../../generated/prisma';
+import { ConfigService } from '@nestjs/config';
+import { PrismaClient } from '@prisma/client';
 
 @Injectable()
 export class PrismaService extends PrismaClient {
-    constructor() {
+    constructor(configService: ConfigService) {
         super({
             datasources: {
                 db: {
-                    url: process.env.DATABASE_URL
-                }
-            }
-        })
+                    url: configService.get<string>('DATABASE_URL'),
+                },
+            },
+        });
     }
 }
