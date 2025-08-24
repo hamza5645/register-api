@@ -10,12 +10,13 @@ export class AuthService {
     //generate the password hash
     const hash = await argon.hash(dto.password);
     //save the new user in the db
-    const user = await this.prisma.user.create({
+    const user: any = await this.prisma.user.create({
       data: {
         email: dto.email,
         hash,
       },
     });
+    delete user.hash;
     //return the saved user
     return user;
   }
