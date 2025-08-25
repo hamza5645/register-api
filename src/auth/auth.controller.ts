@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, HttpCode, HttpStatus } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { AuthDto } from './dto';
@@ -21,10 +21,12 @@ export class AuthController {
 
   @ApiOperation({ summary: 'Signin a user and get token' })
   @ApiBody({ type: AuthDto })
-  @ApiResponse({ status: 201, description: 'The user has been successfully signed in.' })
+  @ApiResponse({ status: 200, description: 'The user has been successfully signed in.' })
   @ApiResponse({ status: 400, description: 'Bad Request.' })
+  @ApiResponse({ status: 401, description: 'Invalid credentials.' })
 
   @Post('signin')
+  @HttpCode(HttpStatus.OK)
   signin(@Body() dto: AuthDto) {
     return this.authService.signin(dto);
   }
