@@ -9,11 +9,11 @@ export class AuthService {
   constructor(private prisma: PrismaService) {}
   async signup(dto: AuthDto) {
     try {
-      const hash = await argon.hash(dto.password);
+      const hashedPassword = await argon.hash(dto.password);
       const user = await this.prisma.user.create({
         data: {
           email: dto.email,
-          hash,
+          password: hashedPassword,
         },
         select: {
           id: true,
@@ -42,7 +42,7 @@ export class AuthService {
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
-    const passwordMatches = await argon.verify(user.hash, dto.password);
+    const passwordMatches = await argon.verify(user.password, dto.password);
     if (!passwordMatches) {
       throw new UnauthorizedException('Invalid credentials');
     }
