@@ -87,4 +87,20 @@ export class AuthService {
       throw error;
     }
   }
+
+  async deleteUser(id: number): Promise<void> {
+    try {
+      await this.prisma.$transaction([
+        this.prisma.bookMark.deleteMany({ where: { userId: id } }),
+        this.prisma.user.delete({ where: { id } }),
+      ]);
+    } catch (error) {
+      if (error instanceof PrismaClientKnownRequestError) {
+        if (error.code === 'P2025') {
+          throw new NotFoundException('User not found');
+        }
+      }
+      throw error;
+    }
+  }
 }

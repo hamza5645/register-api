@@ -1,4 +1,4 @@
-import { Body, Controller, Post, HttpCode, HttpStatus, Patch, Param, ParseIntPipe } from '@nestjs/common';
+import { Body, Controller, Post, HttpCode, HttpStatus, Patch, Param, ParseIntPipe, Delete } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { AuthDto, UpdateUserDto } from './dto';
@@ -42,5 +42,14 @@ export class AuthController {
     @Body() dto: UpdateUserDto,
   ) {
     return this.authService.updateUser(id, dto);
+  }
+
+  @ApiOperation({ summary: 'Delete a user by id' })
+  @ApiResponse({ status: 204, description: 'User deleted successfully.' })
+  @ApiResponse({ status: 404, description: 'User not found.' })
+  @Delete('users/:id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  deleteUser(@Param('id', ParseIntPipe) id: number) {
+    return this.authService.deleteUser(id);
   }
 }
