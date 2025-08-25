@@ -1,6 +1,6 @@
-import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import type { AuthDto } from './dto';
+import type { AuthDto, UpdateUserDto } from './dto';
 import * as argon from 'argon2';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
@@ -54,5 +54,37 @@ export class AuthService {
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };
+  }
+
+  async updateUser(id: number, dto: UpdateUserDto) {
+    try {
+      const updated = await this.prisma.user.update({
+        where: { id },
+        data: {
+          email: dto.email,
+          firstName: dto.firstName,
+          lastName: dto.lastName,
+        },
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+      return updated;
+    } catch (error) {
+      if (error instanceof PrismaClientKnownRequestError) {
+        if (error.code === 'P2025') {
+          throw new NotFoundException('User not found');
+        }
+        if (error.code === 'P2002') {
+          throw new ForbiddenException('Email already in use');
+        }
+      }
+      throw error;
+    }
   }
 }
