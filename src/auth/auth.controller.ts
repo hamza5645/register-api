@@ -1,7 +1,9 @@
-import { Body, Controller, Post, HttpCode, HttpStatus, Patch, Param, ParseIntPipe, Delete } from '@nestjs/common';
+import { Body, Controller, Post, HttpCode, HttpStatus, Patch, Param, ParseIntPipe, Delete, Get, UseGuards, Req, ForbiddenException } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { AuthDto, UpdateUserDto } from './dto';
+import { AuthGuard } from '@nestjs/passport';
+import type { Request } from 'express';
 
 @ApiTags('auth')
 @ApiBearerAuth('access-token')
@@ -31,25 +33,44 @@ export class AuthController {
     return this.authService.signin(dto);
   }
 
+  @ApiOperation({ summary: 'Get current user (JWT payload)' })
+  @ApiResponse({ status: 200, description: 'Returns the JWT payload of the current user.' })
+  @UseGuards(AuthGuard('jwt'))
+  @Get('me')
+  me(@Req() req: Request) {
+    return req.user;
+  }
+
   @ApiOperation({ summary: 'Update a user by id' })
   @ApiBody({ type: UpdateUserDto })
   @ApiResponse({ status: 200, description: 'User updated successfully.' })
   @ApiResponse({ status: 404, description: 'User not found.' })
   @ApiResponse({ status: 403, description: 'Email already in use.' })
+  @UseGuards(AuthGuard('jwt'))
   @Patch('users/:id')
   updateUser(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateUserDto,
+    @Req() req: Request,
   ) {
+    const user = req.user as { sub: number };
+    if (!user || user.sub !== id) {
+      throw new ForbiddenException('You can only update your own profile');
+    }
     return this.authService.updateUser(id, dto);
   }
 
   @ApiOperation({ summary: 'Delete a user by id' })
   @ApiResponse({ status: 204, description: 'User deleted successfully.' })
   @ApiResponse({ status: 404, description: 'User not found.' })
+  @UseGuards(AuthGuard('jwt'))
   @Delete('users/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  deleteUser(@Param('id', ParseIntPipe) id: number) {
+  deleteUser(@Param('id', ParseIntPipe) id: number, @Req() req: Request) {
+    const user = req.user as { sub: number };
+    if (!user || user.sub !== id) {
+      throw new ForbiddenException('You can only delete your own account');
+    }
     return this.authService.deleteUser(id);
   }
 }

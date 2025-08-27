@@ -3,10 +3,11 @@ import { PrismaService } from '../prisma/prisma.service';
 import type { AuthDto, UpdateUserDto } from './dto';
 import * as argon from 'argon2';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService, private jwt: JwtService) {}
   async signup(dto: AuthDto) {
     try {
       const hashedPassword = await argon.hash(dto.password);
@@ -47,13 +48,13 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
     return {
-      id: user.id,
-      email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
+      access_token: await this.signToken(user.id, user.email),
     };
+  }
+
+  private async signToken(userId: number, email: string): Promise<string> {
+    const payload = { sub: userId, email };
+    return this.jwt.signAsync(payload);
   }
 
   async updateUser(id: number, dto: UpdateUserDto) {
