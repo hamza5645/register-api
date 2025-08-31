@@ -57,20 +57,6 @@ export class AuthService {
     return this.jwt.signAsync(payload);
   }
 
-  async listUsers() {
-    return this.prisma.user.findMany({
-      select: {
-        id: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-      orderBy: { id: 'asc' },
-    });
-  }
-
   async getUserById(id: number) {
     const user = await this.prisma.user.findUnique({
       where: { id },

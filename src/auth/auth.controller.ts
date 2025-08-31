@@ -75,13 +75,7 @@ export class AuthController {
     return this.authService.deleteUser(id);
   }
 
-  @ApiOperation({ summary: 'List all users' })
-  @ApiResponse({ status: 200, description: 'Returns an array of users.' })
-  @UseGuards(AuthGuard('jwt'))
-  @Get('users')
-  listUsers() {
-    return this.authService.listUsers();
-  }
+
 
   @ApiOperation({ summary: 'Get a user by id' })
   @ApiResponse({ status: 200, description: 'Returns the user.' })
