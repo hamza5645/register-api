@@ -33,12 +33,13 @@ export class AuthController {
     return this.authService.signin(dto);
   }
 
-  @ApiOperation({ summary: 'Get current user (JWT payload)' })
-  @ApiResponse({ status: 200, description: 'Returns the JWT payload of the current user.' })
+  @ApiOperation({ summary: 'Get current user profile' })
+  @ApiResponse({ status: 200, description: 'Returns the current user with profile fields.' })
   @UseGuards(AuthGuard('jwt'))
   @Get('me')
   me(@Req() req: Request) {
-    return req.user;
+    const user = req.user as { sub: number };
+    return this.authService.getUserById(user.sub);
   }
 
   @ApiOperation({ summary: 'Update a user by id' })
@@ -72,5 +73,22 @@ export class AuthController {
       throw new ForbiddenException('You can only delete your own account');
     }
     return this.authService.deleteUser(id);
+  }
+
+  @ApiOperation({ summary: 'List all users' })
+  @ApiResponse({ status: 200, description: 'Returns an array of users.' })
+  @UseGuards(AuthGuard('jwt'))
+  @Get('users')
+  listUsers() {
+    return this.authService.listUsers();
+  }
+
+  @ApiOperation({ summary: 'Get a user by id' })
+  @ApiResponse({ status: 200, description: 'Returns the user.' })
+  @ApiResponse({ status: 404, description: 'User not found.' })
+  @UseGuards(AuthGuard('jwt'))
+  @Get('users/:id')
+  getUserById(@Param('id', ParseIntPipe) id: number) {
+    return this.authService.getUserById(id);
   }
 }
