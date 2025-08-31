@@ -1,7 +1,7 @@
 import { Body, Controller, Post, HttpCode, HttpStatus, Patch, Param, ParseIntPipe, Delete, Get, UseGuards, Req, ForbiddenException } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
-import { AuthDto, UpdateUserDto } from './dto';
+import { AuthDto, UpdateUserDto, SignupDto } from './dto';
 import { AuthGuard } from '@nestjs/passport';
 import type { Request } from 'express';
 
@@ -12,12 +12,12 @@ export class AuthController {
   constructor(private authService: AuthService) {}
 
   @ApiOperation({ summary: 'Signup a new user' })
-  @ApiBody({ type: AuthDto })
+  @ApiBody({ type: SignupDto })
   @ApiResponse({ status: 201, description: 'The user has been successfully created.' })
   @ApiResponse({ status: 400, description: 'Bad Request.' })
 
   @Post('signup')
-  signup(@Body() dto: AuthDto) {
+  signup(@Body() dto: SignupDto) {
     return this.authService.signup(dto);
   }
 
